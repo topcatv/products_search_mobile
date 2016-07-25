@@ -4,7 +4,7 @@
   "proxies": [
       {
         "path": "/api",
-        "proxyUrl": "http://localhost:8080/api"
+        "proxyUrl": "http://p1.haigo8.com/p1"
       }
     ]
 }

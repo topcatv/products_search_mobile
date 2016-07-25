@@ -23,14 +23,15 @@ angular.module('starter', ['ionic'])
     });
   })
   .constant('ApiEndpoint', {
-    url: '/api'
+    url: 'http://p1.haigo8.com/p1' // for prod
+    // url: '/api' // for dev
   })
-  .controller('MyCtrl', ['$scope', '$timeout', 'MyService', function ($scope, $timeout, MyService) {
+  .controller('MyCtrl', ['$scope', '$timeout', '$ionicScrollDelegate', 'MyService', function ($scope, $timeout, $ionicScrollDelegate, MyService) {
 
     $scope.data = {
       showDelete: false
     };
-    $scope.pageNo = 2;
+    $scope.pageNo = 1;
     $scope.hasmore = true;
 
     $scope.edit = function (item) {
@@ -49,7 +50,10 @@ angular.module('starter', ['ionic'])
       $scope.items.splice($scope.items.indexOf(item), 1);
     };
 
-    $scope.onSearch = function () {
+    $scope.onSearch = function (page) {
+      if(page){
+        $scope.pageNo = page;
+      }
       MyService.queryProducts({
         code: $scope.params,
         name: $scope.params,
@@ -57,6 +61,11 @@ angular.module('starter', ['ionic'])
         pageNo: $scope.pageNo
       }).then(function (data) {
         $scope.items = data.content;
+        $scope.pageNo++;
+        $scope.hasmore = data.totalPages >= $scope.pageNo;
+        if(1 === page) {
+          $ionicScrollDelegate.$getByHandle('listScroll').scrollTop();
+        }
       });
     };
     //下拉刷新
@@ -68,7 +77,7 @@ angular.module('starter', ['ionic'])
       }).then(function (data) {
         $scope.items = data.content;
         $scope.pageNo = 2;
-        $scope.hasmore = true;
+        $scope.hasmore = data.totalPages >= $scope.pageNo;
         // 停止广播ion-refresher
         $scope.$broadcast('scroll.refreshComplete');
       });
@@ -92,19 +101,18 @@ angular.module('starter', ['ionic'])
           }
           $scope.$broadcast('scroll.infiniteScrollComplete');
           $scope.pageNo++;
-          $scope.hasmore = data.totalPages > $scope.pageNo;
-          console.log('totalPages: ', data.totalPages);
-          console.log('next pageNo: ', $scope.pageNo);
-          console.log('$scope.hasmore: ', $scope.hasmore);
+          $scope.hasmore = data.totalPages >= $scope.pageNo;
         });
       }, 1000);
     };
-    $scope.moreDataCanBeLoaded = function(){
+    $scope.moreDataCanBeLoaded = function() {
       return $scope.hasmore;
     }
 
-    MyService.queryProducts({}).then(function (data) {
+    MyService.queryProducts({}).then(function(data) {
       $scope.items = data.content;
+      $scope.pageNo++;
+      $scope.hasmore = data.totalPages >= $scope.pageNo;
     });
 
   }])
